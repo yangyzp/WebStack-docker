@@ -41,7 +41,7 @@ RUN  apk --no-cache add \
      ln -s /usr/bin/python3 /usr/bin/python   && \
      ln -s /usr/bin/pip3    /usr/bin/pip      && \
      pip install --upgrade pip                && \
-     git clone -b manyuser https://github.com/wikicc/shadowsocks.git "/root/shadowsocks" --depth 1 && \
+     git clone -b manyuser https://github.com/yangyzp/shadowsocks.git "/root/shadowsocks" --depth 1 && \
      cd  /root/shadowsocks 
      pip install -r requirements.txt          && \
      rm -rf ~/.cache && touch /etc/hosts.deny && \
