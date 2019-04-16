@@ -2,6 +2,8 @@ FROM alpine:3.9
 MAINTAINER FAN VINGA<fanalcest@gmail.com>
 
 ENV NODE_ID=0                     \
+    DNS_1=1.0.0.1                 \
+    DNS_2=8.8.8.8                 \
     SPEEDTEST=0                   \
     CLOUDSAFE=0                   \
     AUTOEXEC=0                    \
@@ -31,6 +33,7 @@ RUN  apk --no-cache add \
                         libtool \
                         libffi-dev            && \
      apk --no-cache add --virtual .build-deps \
+                        git \
                         tar \
                         make \
                         py3-pip \
@@ -40,12 +43,14 @@ RUN  apk --no-cache add \
                         linux-headers         && \
      ln -s /usr/bin/python3 /usr/bin/python   && \
      ln -s /usr/bin/pip3    /usr/bin/pip      && \
+     git clone -b manyuser https://github.com/wikicc/shadowsocks.git "/root/shadowsocks" --depth 1 && \
+     cd  /root/shadowsocks                    && \
      pip install --upgrade pip                && \
-     git clone -b manyuser https://github.com/yangyzp/shadowsocks.git "/root/shadowsocks" --depth 1 && \
-     cd  /root/shadowsocks 
      pip install -r requirements.txt          && \
      rm -rf ~/.cache && touch /etc/hosts.deny && \
      apk del --purge .build-deps
+
+WORKDIR /root/shadowsocks
 
 CMD cp apiconfig.py userapiconfig.py &&                                        cp   config.json  user-config.json && \
     sed -i "s|NODE_ID = 1|NODE_ID = ${NODE_ID}|"                               /root/shadowsocks/userapiconfig.py && \
@@ -65,4 +70,5 @@ CMD cp apiconfig.py userapiconfig.py &&                                        c
     sed -i "s|MYSQL_DB = 'shadowsocks'|MYSQL_DB = '${MYSQL_DB}'|"              /root/shadowsocks/userapiconfig.py && \
     sed -i "s|\"redirect\": \"\"|\"redirect\": \"${REDIRECT}\"|"               /root/shadowsocks/user-config.json && \
     sed -i "s|\"fast_open\": false|\"fast_open\": ${FAST_OPEN}|"               /root/shadowsocks/user-config.json && \
+    echo -e "${DNS_1}\n${DNS_2}\n" >                                           /root/shadowsocks/dns.conf         && \
     python /root/shadowsocks/server.py
