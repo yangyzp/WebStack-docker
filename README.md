@@ -1,76 +1,57 @@
-## 使用docker快速部署Shadowsocks-libev、ShadowsocksR
-## ShadowsocksR Docker Image by Teddysun
+### 项目介绍
 
-[shadowsocksr][1] is a lightweight secured socks5 proxy for embedded devices and low end boxes.
-It is a port of [shadowsocks][2] created by @clowwindy maintained by @breakwa11 and @Akkariiin.
+根据[WebStackLaravel](https://github.com/hui-ho/WebStack-Laravel)项目创建的Docker部署版本，旨在快速进行部署和使用，也总结了一些这个项目的使用经验及排错方法。此后会根据此项目Release版本不定期更新。欢迎使用及建议
 
-Docker images are built for quick deployment in various computing cloud providers.
-For more information on docker and containerization technologies, refer to [official document][3].
+- 联系邮箱【arvon2014@gmail.com】
 
-## Prepare the host
+### 使用说明
 
-If you need to install docker by yourself, follow the [official installation guide][4].
+包含直接执行`docker run`的方式以及`docker-compose`的方式，推荐使用docker-compose的方法，另外添加了支持参数的说明
 
-## Pull the image
+- 镜像支持的参数
 
-```bash
-$ docker pull teddysun/shadowsocks-r
+|参数|说明|
+|---|---|
+|INSTALL_DIR|容器内的部署家目录|
+|DB_HOST|数据库地址，默认`127.0.0.1`|
+|DB_PORT|数据库端口，默认`3306`|
+|DB_DATABASE|数据库名称,默认`homestead`|
+|DB_USERNAME|数据库用户名,默认`homestead`|
+|DB_PASSWORD|数据库密码,默认`secret`|
+|LOGIN_COPTCHA|是否启动控制台验证码，默认true|
+
+
+- 使用`docker run`方式
+**注意**由于webstacklaravel需要mysql支持，所以直接使用`docker run`需要手动指定Mysql的地址信息
+目前支持的参数
+
+- 使用`Docker-compose`方式
+使用compose命令会起3个容器，第一次启动默认会进行数据库初始化
+```
+docker-compose up
+```
+**WARING:**
+当只想启动数据库，不进行初始化的话，需要修改`docker-compose.yml`文件中的`command`指令
+```
+#修改前
+command: ['/entrypoint.sh','new-server']
+#修改后
+command: ['/entrypoint.sh','serve']
+```
+具体可查看`entrypoint.sh`脚本,Dockerfile的默认参数是`serve`
+
+
+
+### 常见问题
+
+针对一些原项目的提问在这里做一下汇总，欢迎补充
+
+- 改变监听地址
+可以通过Nginx Proxy进行代理，或者添加`--host`参数
+```
+php artisan serve --host=0.0.0.0 --port=8000
 ```
 
-or pull image based **alpine**
-
-```bash
-$ docker pull teddysun/shadowsocks-r:alpine
-```
+- 推荐使用Mysql5.6版本
 
 
-This pulls the latest release of shadowsocks-r.
-
-It can be found at [Docker Hub][5].
-
-## Start a container
-
-You **must create a configuration file**  `/etc/shadowsocks-r/config.json` in host at first, and sample:
-
-```
-{
-    "server":"0.0.0.0",
-    "server_ipv6":"::",
-    "server_port":9000,
-    "local_address":"127.0.0.1",
-    "local_port":1080,
-    "password":"password0",
-    "timeout":120,
-    "method":"aes-256-cfb",
-    "protocol":"origin",
-    "protocol_param":"",
-    "obfs":"plain",
-    "obfs_param":"",
-    "redirect":"",
-    "dns_ipv6":false,
-    "fast_open":true,
-    "workers":1
-}
-```
-
-This container with sample configuration `/etc/shadowsocks-r/config.json`
-
-There is an example to start a container that listens on `9000` (both TCP and UDP):
-
-```bash
-$ docker run -d -p 9000:9000 -p 9000:9000/udp --name ssr -v /etc/shadowsocks-r:/etc/shadowsocks-r teddysun/shadowsocks-r
-```
-
-There is an example to start a container based **alpine** that listens on `9000` (both TCP and UDP):
-
-```bash
-$ docker run -d -p 9000:9000 -p 9000:9000/udp --name ssr -v /etc/shadowsocks-r:/etc/shadowsocks-r teddysun/shadowsocks-r:alpine
-```
-
-**Note**: The port number must be same as configuration.
-
-[1]: https://github.com/shadowsocksrr/shadowsocksr
-[2]: https://shadowsocks.org/en/index.html
-[3]: https://docs.docker.com/
-[4]: https://docs.docker.com/install/
-[5]: https://hub.docker.com/r/teddysun/shadowsocks-r/
